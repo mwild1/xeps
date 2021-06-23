@@ -170,9 +170,9 @@
   </section2>
 
   <section2 topic='SCRAM credentials' anchor='scram-credentials'>
-    <p>Authentication secrets may be included that allow for SCRAM authentication as defined in &rfc5802;.</p>
+    <p>Authentication secrets may be included that allow for authentication using the SCRAM family of mechanisms, as defined in &rfc5802;.</p>
 
-    <p>Each set of credentials should be encapsulated within a &lt;scram-credentials/&gt; element in the 'urn:xmpp:pie:0#scram' namespace, and contained within the relevant &lt;user/&gt; element. The element should have a 'mechanism' attribute specifying the registered name of the mechanism that the credentials are used for, e.g. 'SCRAM-SHA-1'. The element MUST contain a single occurrence of each of the following child elements:</p>
+    <p>Each set of credentials should be encapsulated within a &lt;scram-credentials/&gt; element in the 'urn:xmpp:pie:0#scram' namespace, and contained within the relevant &lt;user/&gt; element. The element should have a 'mechanism' attribute specifying the registered name of the mechanism that the credentials are used for (always without the "-PLUS" suffix), e.g. 'SCRAM-SHA-1'. The element MUST contain a single occurrence of each of the following child elements:</p>
 
     <ul>
       <li>&lt;iter-count/&gt;: containing the SCRAM iteration count, e.g. '10000'. This must be a positive integer without leading zeros.</li>
