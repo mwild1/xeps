@@ -346,10 +346,14 @@
 
     <p>Node configuration and the actual node data are encapsulated separately, as described below. A typical export that contains both node configuration and the actual data contained within the node, will include two &lt;pubsub/&gt; elements (qualified by different namespaces).</p>
 
+    <p>Many server implementations include support for additional pubsub features from &xep0060; beyond those required by XEP-0163. This specification aims to preserve this additional data also, when it is present and supported by both servers.</p>
+
     <section3 topic='PEP node configuration' anchor='pep-config'>
-      <p>Within the &lt;user/&gt; element there should be a single &lt;pubsub/&gt; element qualified by the 'http://jabber.org/protocol/pubsub#owner' namespace (note the '#owner' suffix). Within this element, there MUST be one &lt;configure/&gt; element for each exported node, with the node's name in the 'node' attribute.</p>
+      <p>Within the &lt;user/&gt; element there should be a single &lt;pubsub/&gt; element qualified by the 'http://jabber.org/protocol/pubsub#owner' namespace (note the '#owner' suffix). Within this element, there MUST be one &lt;configure/&gt; element for each exported node, with the node's name in the 'node' attribute. There MAY be additional elements included, at most one per node of each kind: &lt;subscriptions/&gt; and &lt;affiliations&gt;, following the syntax defined in XEP-0060.</p>
 
       <p>The format of the &lt;configure/&gt; is a &xep0004; data form, typically containing the fields documented in XEP-0060, encoding the configuration of the named node.</p>
+
+      <p>As a general rule, importers SHOULD ignore node configuration options that the target server implementation doesn't recognise, to allow porting data between different implementations even in the presence of custom extensions. Exceptions to this requirement may be made for imports that are expected to be lossless, for example if the user has specifically requested a lossless import, or if the importer recognises certain configuration fields as critical to protect the node's security or integrity.</p>
     </section3>
 
     <section3 topic='PEP node items' anchor='pep-items'>
@@ -378,6 +382,12 @@
             </field>
           </x>
         </configure>
+        <affiliations node='urn:xmpp:bookmarks:1'>
+          <affiliation jid='mercutio@example.net' affiliation='member'/>
+        </affiliations>
+        <subscriptions node='urn:xmpp:bookmarks:1'>
+          <subscription jid='mercutio@example.net' subscription='subscribed' subid='123-abc'/>
+        </subscriptions>
         <configure node='http://jabber.org/protocol/nick'>
           <x xmlns='jabber:x:data' type='form'>
             <field var='FORM_TYPE' type='hidden'>
