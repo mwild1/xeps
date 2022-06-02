@@ -23,6 +23,18 @@
   <supersededby/>
   <shortname>fulltextmam</shortname>
   &dcridland;
+  &mwild;
+  <revision>
+    <version>0.3.0</version>
+    <date>2022-06-02</date>
+    <initials>mw</initials>
+    <remark>
+      <ul>
+        <li>Define simple variant for improved interoperability in an open ecosystem</li>
+        <li>Add optional human-readable instructions and machine-readable syntax hint for advanced search field</li>
+      </ul>
+    </remark>
+  </revision>
   <revision>
     <version>0.2.0</version>
     <date>2020-01-29</date>
@@ -53,34 +65,119 @@
 </header>
 
 <section1 topic='Introduction' anchor='intro'>
-  <p>&xep0313; has an extensible form. This specification extends the extensible form with an extension which extends MAM to perform full text searching. A number of existing implementations of this extension exist - extending their existing extensions to confirm to the extension in this specification now it exists is intended to be trivial.</p>
+  <p>&xep0313; has an extensible form. This specification extends the extensible form with an extension which extends MAM to perform full text searching. A number of existing implementations of this extension exist - extending their existing extensions to conform to the extension in this specification now it exists is intended to be trivial.</p>
 </section1>
 
-<section1 topic='Overview' anchor="overview">
-  <section2 topic="Discovering Support" anchor="feature">
-    <p>Support for this protocol is advertised by the Service Discovery protocol defined in &xep0030; using a feature
-      of <tt>&ns;</tt>.</p>
-  </section2>
-  <section2 topic="Searching">
-    <p>Searching using full text is performed by the client supplying an additional text key, which if non-empty is used as input to a full text search of some form. The precise meaning of this field is left entirely implementation-defined at this time. Future revisions of this specification might impose additional constraints.</p>
-  </section2>
-</section1>
-
-  <section1 topic="Protocol Elements">
-    <section2 topic="Querying">
-      <p>A text input field of <tt>{&ns;}fulltext</tt> is hereby defined for the 'urn:xmpp:mam:2' FORM_TYPE, as conforming to the syntax defined in &xep0068;</p>
+  <section1 topic="Search types" anchor="search-types">
+    <p>This specification defines two flavours of search that servers can offer and that clients can use. To ensure maxiumum interoperability
+    and usability, servers SHOULD offer simple searches whenever possible, and MAY offer advanced searches.</p>
+    <section2 topic="Simple searches" anchor="simple">
+        <p>A <strong>simple</strong> search consists of a plain text natural-language string which is desired in the messages returned
+           from a search query. Servers may apply various techniques appropriate for a natural-language search - such as stemming and filtering
+           of stop words. However, the string MUST NOT be interpreted as containing any special syntax, keywords or operators, even if such syntax
+           is supported by the server's underlying search engine.</p>
+        <p>If simple searches are supported by the server, it should include a text field in the MAM query form with the name
+           <tt>{&ns;}fulltext#simple</tt> and advertise the <tt>urn:xmpp:fulltext:0#simple</tt> feature via Service Discovery.</p>
+        <p>Within the &lt;field/&gt; element, the server MAY indicate to the client a list of languages via the &lt;lang/&gt; element in the
+           &ns; namespace. The text content of this element should be a comma-separated list of languages supported by the server, identified
+           by their ISO 631-1 codes. The intent of this field is not to restrict what languages may be used with the search function, but to
+           provide hints to the client (and user) when the search functionality is optimized for particular languages. If the server's search
+           functionality is language-agnostic, then the &lt;lang/&gt; element MUST NOT be included in the field.</p>
+           <example caption='Server offers simple text search functionality'><![CDATA[
+<iq type='result' id='form1'>
+  <query xmlns='urn:xmpp:mam:2'>
+    <x xmlns='jabber:x:data' type='form'>
+      <field type='hidden' var='FORM_TYPE'>
+        <value>urn:xmpp:mam:2</value>
+      </field>
+      <field type='jid-single' var='with'/>
+      <field type='text-single' var='start'/>
+      <field type='text-single' var='end'/>
+      <field type='text-single' var='{urn:xmpp:fulltext:0}fulltext#simple'>
+        <lang xmlns="urn:xmpp:fulltext:0">en,fr</lang>
+      </field>
+    </x>
+  </query>
+</iq>
+]]></example>
     </section2>
-    <section2 topic="Results">
-      <p>The precise matching of the supplied text string is left implementation-defined. Servers MAY use any full-text search mechanism. While this might mean that certain characters are deemed "special", clients are RECOMMENDED not to attempt any support for these, as they are unlikely to be portable between implementations. While many implementations of this protocol might conform in a purely syntactic sense, it is to be noted that the intent is that a reasonable full-text search is performed based on the input - servers SHOULD therefore honour this intent despite the lack of a formal strict definition.</p>
+    <section2 topic="Advanced searches" anchor="advanced">
+        <p>An <strong>advanced</strong> search may also be offered and requested. Such a search may utilize additional features and syntax,
+           such as boolean and negation operators. Many such query languages exist, and no attempt is made to standardize any syntax in this
+           document.</p>
+        <p>If advanced searches are supported by the server, it should include a text field in the MAM query form with the name
+           <tt>{&ns;}fulltext</tt> and advertise a <tt>urn:xmpp:fulltext:0</tt> feature via Service Discovery.</p>
+        <p>The &lt;field/&gt; element SHOULD contain a &lt;desc/&gt; element (as defined in &xep0004;) with
+           a natural-language description of the search syntax. This element should possess an <tt>xml:lang</tt> attribute when appropriate.</p>
+        <p>Additionally, a &lt;syntax/&gt; element qualified by the &ns; namespace MAY be included, with the content being a value from
+           the search syntax types registry defined later in this document.</p>
+        <p>Finally, as with the simple search field, a comma-separated list of supported languages MAY be provided in the &lt;lang/&gt; element,
+           if the search functionality is optimized for specific languages.</p>
+           <example caption='Server offers advanced text search functionality'><![CDATA[
+<iq type='result' id='form1'>
+  <query xmlns='urn:xmpp:mam:2'>
+    <x xmlns='jabber:x:data' type='form'>
+      <field type='hidden' var='FORM_TYPE'>
+        <value>urn:xmpp:mam:2</value>
+      </field>
+      <field type='jid-single' var='with'/>
+      <field type='text-single' var='start'/>
+      <field type='text-single' var='end'/>
+      <field type='text-single' var='{urn:xmpp:fulltext:0}fulltext'>
+        <desc xml:lang="en">
+          Enclose exact phrases in "double quotes", exclude search terms by
+          prefixing with '-'.
+        </desc>
+        <syntax xmlns="urn:xmpp:fulltext:0" type="postgres-websearch"/>
+        <lang xmlns="urn:xmpp:fulltext:0">en,fr</lang>
+      </field>
+    </x>
+  </query>
+</iq>
+]]></example>
     </section2>
   </section1>
 
-  <section1 topic="Schema">
-    <p>Not sure this is needed at all.</p>
+  <section1 topic="Usage" anchor="usage">
+    <section2 topic="Discovering Support" anchor="feature">
+      <p>Support for this protocol can be discovered by requesting the MAM query form as described in XEP-0313, or via the Service Discovery protocol defined in &xep0030; using a feature of <tt>&ns;#simple</tt> if simple searches are supported, and/or <tt>&ns;</tt> if advanced searches are supported.</p>
+    </section2>
+    <section2 topic="Searching">
+      <p>Searching using full text is performed by the client supplying an additional text key for either the <tt>&ns;#simple</tt> or <tt>&ns;</tt> fields described above. If either field is present in a query, the server MUST only include results which contain text matching the search query and match any other filtering criteria defined in the query. In the case that a server supports both search types, clients SHOULD NOT include both fields simultaneously in a query - the server behaviour upon receipt of a query containing both fields SHOULD result in an error.</p>
+      <p>Clients SHOULD ensure that <tt>xml:lang</tt> is set appropriately on the form submission, to allow the server to optimize results for the user's preferred language.</p>
+    </section2>
+  </section1>
+
+  <section1 topic="XML Schema" anchor="schema">
+  <code><![CDATA[
+<?xml version='1.0' encoding='UTF-8'?>
+<xs:schema
+    xmlns:xs='http://www.w3.org/2001/XMLSchema'
+    targetNamespace='urn:xmpp:fulltext:0'
+    xmlns='urn:xmpp:fulltext:0'
+    elementFormDefault='qualified'>
+
+  <xs:annotation>
+    <xs:documentation>
+      The protocol documented by this schema is defined in
+      XEP-0431: http://xmpp.org/extensions/xep-0431.html
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:element name='lang' type='xs:string'/>
+
+  <xs:element name='syntax'>
+      <xs:complexType>
+        <xs:attribute name='type' type='xs:string' use='required'/>
+      </xs:complexType>
+  </xs:element>
+
+</xs:schema>
+]]></code>
   </section1>
 
 <section1 topic='Security Considerations' anchor='security'>
-  <p>None?</p>
+  <p>The authors are not aware of any security issues raised by this specification.</p>
 </section1>
 
 <section1 topic='IANA Considerations' anchor='iana'>
@@ -88,6 +185,75 @@
 </section1>
 
 <section1 topic='XMPP Registrar Considerations' anchor='registrar'>
+  <p>This document defines a new registry of advanced search syntax types.</p>
+  <section2 topic="Search syntax types" anchor="registry-syntax">
+    <section3 topic="Process">
+      <p>The XMPP Registrar maintains a registry at &SEARCHSYNTAX; that defines values for the 'type' attribute of the &lt;syntax/&gt; element qualified by the '&ns;' namespace.</p>
+      &REGPROCESS;
+      <code><![CDATA[
+<syntax-type>
+  <name>
+    The (unique) name that identifies this syntax.
+  </name>
+  <description>
+    A human-readable description of the syntax type.
+  </description>
+  <url>
+    A URL where the syntax is described and documented.
+  </url>
+</syntax-type>
+]]></code>
+    </section3>
+    <section3 topic="Initial submission">
+      <p>As part of this document, the following status codes are registered:</p>
+      <code><![CDATA[
+<syntax-type>
+  <name>
+    lucene
+  </name>
+  <description>
+    Apache Lucene default query parser syntax.
+  </description>
+  <url>
+    https://lucene.apache.org/core/9_2_0/queryparser/org/apache/lucene/queryparser/flexible/standard/StandardQueryParser.html
+  </url>
+</syntax-type>
+<syntax-type>
+  <name>
+    postgres-tsquery
+  </name>
+  <description>
+    PostgreSQL 'tsquery' syntax
+  </description>
+  <url>
+    https://www.postgresql.org/docs/current/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES
+  </url>
+</syntax-type>
+<syntax-type>
+  <name>
+    postgres-websearch
+  </name>
+  <description>
+    PostgreSQL 'websearch' syntax
+  </description>
+  <url>
+    https://www.postgresql.org/docs/current/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES
+  </url>
+</syntax-type>
+<syntax-type>
+  <name>
+    sqlite-fts5
+  </name>
+  <description>
+    SQLite 3.x FTS5 extension full text query syntax
+  </description>
+  <url>
+    https://www.sqlite.org/fts5.html
+  </url>
+</syntax-type>
+]]></code>
+    </section3>
+  </section2>
   <p>Registration of the field pointing to this document.</p>
 </section1>
 

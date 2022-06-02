@@ -95,6 +95,7 @@ THE SOFTWARE.
 <!ENTITY NAMESPACES "&lt;<link url='https://xmpp.org/registrar/namespaces.html'>https://xmpp.org/registrar/namespaces.html</link>&gt;">
 <!ENTITY NODES "&lt;<link url='https://xmpp.org/registrar/nodes.html'>https://xmpp.org/registrar/nodes.html</link>&gt;">
 <!ENTITY QUERYTYPES "&lt;<link url='https://xmpp.org/registrar/querytypes.html'>https://xmpp.org/registrar/querytypes.html</link>&gt;">
+<!ENTITY SEARCHSYNTAX "&lt;<link url='https://xmpp.org/registrar/searchsyntax.html'>https://xmpp.org/registrar/searchsyntax.html</link>&gt;">
 <!ENTITY SHIMHEADERS "&lt;<link url='https://xmpp.org/registrar/shim.html'>https://xmpp.org/registrar/shim.html</link>&gt;">
 <!ENTITY SIPROFILES "&lt;<link url='https://xmpp.org/registrar/si-profiles.html'>https://xmpp.org/registrar/si-profiles.html</link>&gt;">
 <!ENTITY STREAMFEATURES "&lt;<link url='https://xmpp.org/registrar/stream-features.html'>https://xmpp.org/registrar/stream-features.html</link>&gt;">
